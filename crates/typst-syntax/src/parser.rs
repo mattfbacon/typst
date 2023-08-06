@@ -1044,6 +1044,12 @@ fn let_binding(p: &mut Parser) {
         PatternKind::Destructuring => destructuring = true,
     }
 
+    if p.eat_if(SyntaxKind::Colon) {
+        let m = p.marker();
+        type_(p);
+        p.wrap(m, SyntaxKind::TypeAnnotation);
+    }
+
     let f = if closure || destructuring { Parser::expect } else { Parser::eat_if };
     if f(p, SyntaxKind::Eq) {
         code_expr(p);
@@ -1184,6 +1190,74 @@ fn return_stmt(p: &mut Parser) {
         code_expr(p);
     }
     p.wrap(m, SyntaxKind::FuncReturn);
+}
+
+fn type_(p: &mut Parser) {
+    let m = p.marker();
+    let mut union = false;
+
+    type_inner_1(p);
+
+    while p.eat_if(SyntaxKind::Plus) {
+        union = true;
+        type_inner_1(p);
+    }
+
+    if union {
+        p.wrap(m, SyntaxKind::Binary);
+    }
+}
+
+fn type_inner_1(p: &mut Parser) {
+    let m = p.marker();
+
+    let wrap = type_inner_2(p);
+
+    if p.eat_if(SyntaxKind::Arrow) {
+        p.wrap(m, SyntaxKind::Params);
+        type_(p);
+        p.wrap(m, SyntaxKind::Closure);
+    } else if let Some(wrap) = wrap {
+        p.wrap(m, wrap);
+    }
+}
+
+fn type_inner_2(p: &mut Parser) -> Option<SyntaxKind> {
+    if p.at(SyntaxKind::LeftParen) {
+        type_collection(p)
+    } else {
+        p.expect(SyntaxKind::Ident);
+        None
+    }
+}
+
+fn type_collection(p: &mut Parser) -> Option<SyntaxKind> {
+    let m = p.marker();
+    let mut count = 0usize;
+
+    p.stop_at_newline(false);
+    p.assert(SyntaxKind::LeftParen);
+
+    while !p.current().is_terminator() {
+        type_(p);
+        count += 1;
+
+        if p.current().is_terminator() {
+            break;
+        }
+
+        p.expect(SyntaxKind::Comma);
+    }
+
+    p.expect_closing_delimiter(m, SyntaxKind::RightParen);
+
+    p.unstop();
+
+    if count > 1 {
+        Some(SyntaxKind::Array)
+    } else {
+        None
+    }
 }
 
 fn validate_parenthesized_at(p: &mut Parser, m: Marker) {

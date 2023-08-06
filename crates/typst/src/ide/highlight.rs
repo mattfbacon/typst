@@ -251,6 +251,7 @@ pub fn highlight(node: &LinkedNode) -> Option<Tag> {
         SyntaxKind::FuncReturn => None,
         SyntaxKind::Destructuring => None,
         SyntaxKind::DestructAssignment => None,
+        SyntaxKind::TypeAnnotation => None,
 
         SyntaxKind::LineComment => Some(Tag::Comment),
         SyntaxKind::BlockComment => Some(Tag::Comment),

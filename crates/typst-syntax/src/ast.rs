@@ -2025,3 +2025,8 @@ impl FuncReturn {
         self.0.cast_last_match()
     }
 }
+
+node! {
+    /// A type expression: `integer`, `string => (integer, string, content)`, `(name: string, age: integer)`.
+    TypeAnnotation
+}

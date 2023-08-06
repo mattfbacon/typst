@@ -254,6 +254,8 @@ pub enum SyntaxKind {
     Destructuring,
     /// A destructuring assignment expression: `(x, y) = (1, 2)`.
     DestructAssignment,
+    /// A type expression: `integer`, `string => (integer, string, content)`, `(name: string, age: integer)`, `integer | string`.
+    TypeAnnotation,
 
     /// A line comment: `// ...`.
     LineComment,
@@ -471,6 +473,7 @@ impl SyntaxKind {
             Self::FuncReturn => "`return` expression",
             Self::Destructuring => "destructuring pattern",
             Self::DestructAssignment => "destructuring assignment expression",
+            Self::TypeAnnotation => "type annotation",
             Self::LineComment => "line comment",
             Self::BlockComment => "block comment",
             Self::Error => "syntax error",
